@@ -10,6 +10,7 @@ class GameEngine:
         self.current_card = self.deck.draw()
         self.next_card = None
         self.score = 0
+        self.streak = 0
         self.status_msg = "Will the next card be HIGHER or LOWER?"
         self.status_color = (220, 220, 220)
 
@@ -24,22 +25,38 @@ class GameEngine:
     def evaluate_guess(self, guess):
         """Draws next card and evaluates prediction."""
         self.next_card = self.deck.draw()
-        
+
         if guess == "HIGHER":
             correct = self.next_card.numeric_rank > self.current_card.numeric_rank
         else:
             correct = self.next_card.numeric_rank < self.current_card.numeric_rank
-                   
+
         if correct:
-            self.score += 1
-            self.status_msg = f"CORRECT! {self.next_card.rank_str} vs {self.current_card.rank_str}"
+            self.streak += 1
+
+            # Multiplier increases with each consecutive correct prediction.
+            multiplier = self.streak
+            points_earned = multiplier
+
+            self.score += points_earned
+            self.status_msg = (
+                f"CORRECT! +{points_earned} "
+                f"(Streak: {self.streak}x)"
+            )
             self.status_color = (80, 220, 80)
+
         else:
             self.score = max(0, self.score - 1)
-            self.status_msg = f"WRONG! {self.next_card.rank_str} vs {self.current_card.rank_str}"
+            self.streak = 0
+
+            self.status_msg = (
+                f"WRONG! {self.next_card.rank_str} vs "
+                f"{self.current_card.rank_str}"
+            )
             self.status_color = (235, 75, 75)
 
         self.current_card = self.next_card
+
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -59,6 +76,13 @@ class GameEngine:
 
         score_surf = self.font_medium.render(f"Score: {self.score}", True, (255, 220, 80))
         screen.blit(score_surf, (30, 30))
+
+        streak_surf = self.font_small.render(
+            f"Streak: {self.streak}",
+            True,
+            (255, 255, 255),
+        )
+        screen.blit(streak_surf, (30, 65))
 
         rem_surf = self.font_small.render(f"Deck: {self.deck.remaining} left", True, (210, 210, 210))
         screen.blit(rem_surf, (self.width - rem_surf.get_width() - 30, 35))
