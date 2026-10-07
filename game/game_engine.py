@@ -26,34 +26,46 @@ class GameEngine:
         """Draws next card and evaluates prediction."""
         self.next_card = self.deck.draw()
 
-        if guess == "HIGHER":
-            correct = self.next_card.numeric_rank > self.current_card.numeric_rank
-        else:
-            correct = self.next_card.numeric_rank < self.current_card.numeric_rank
+        current_rank = self.current_card.numeric_rank
+        next_rank = self.next_card.numeric_rank
 
-        if correct:
-            self.streak += 1
-
-            # Multiplier increases with each consecutive correct prediction.
-            multiplier = self.streak
-            points_earned = multiplier
-
-            self.score += points_earned
+        # Same rank: PUSH. Score and streak remain unchanged.
+        if next_rank == current_rank:
             self.status_msg = (
-                f"CORRECT! +{points_earned} "
-                f"(Streak: {self.streak}x)"
-            )
-            self.status_color = (80, 220, 80)
-
-        else:
-            self.score = max(0, self.score - 1)
-            self.streak = 0
-
-            self.status_msg = (
-                f"WRONG! {self.next_card.rank_str} vs "
+                f"PUSH! {self.next_card.rank_str} vs "
                 f"{self.current_card.rank_str}"
             )
-            self.status_color = (235, 75, 75)
+            self.status_color = (245, 200, 80)
+
+        else:
+            if guess == "HIGHER":
+                correct = next_rank > current_rank
+            else:
+                correct = next_rank < current_rank
+
+            if correct:
+                self.streak += 1
+
+                # Multiplier increases with each consecutive correct prediction.
+                multiplier = self.streak
+                points_earned = multiplier
+
+                self.score += points_earned
+                self.status_msg = (
+                    f"CORRECT! +{points_earned} "
+                    f"(Streak: {self.streak}x)"
+                )
+                self.status_color = (80, 220, 80)
+
+            else:
+                self.score = max(0, self.score - 1)
+                self.streak = 0
+
+                self.status_msg = (
+                    f"WRONG! {self.next_card.rank_str} vs "
+                    f"{self.current_card.rank_str}"
+                )
+                self.status_color = (235, 75, 75)
 
         self.current_card = self.next_card
 
